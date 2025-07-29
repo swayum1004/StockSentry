@@ -51,7 +51,7 @@ StockSentry is a Python-based project designed to predict the next day's stock p
 2.  **Install the required Python packages:**
 
     ```bash
-    pip install yfinance requests pandas textblob scikit-learn
+    pip install -r requirements.txt
     ```
 
 3.  **Obtain a NewsAPI Key:**
