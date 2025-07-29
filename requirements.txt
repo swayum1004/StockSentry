@@ -3,4 +3,4 @@ yfinance==0.2.36
 textblob==0.17.1
 scikit-learn==1.4.2
 python-dotenv==1.0.1
-requests==2.31.0
+requests==2.31.0python-dotenv
