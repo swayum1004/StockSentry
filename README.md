@@ -80,6 +80,21 @@ StockSentry is a Python-based project designed to predict the next day's stock p
     - The notebook will download historical stock data, fetch news, perform sentiment analysis, train the model, and make a prediction.
     - Ensure you have set up your `NEWS_API_KEY` as described above.
 
+## 🔑 API Key Setup
+
+This project uses the [NewsAPI](https://newsapi.org/) to fetch news headlines. To use it, you'll need to securely provide your API key via a `.env` file.
+
+### Steps:
+
+1. **Copy `.env.example` to `.env`**:
+   ```bash
+   cp .env.example .env
+   ```
+2. **Edit .env and add your News API key:
+```bash
+NEWS_API_KEY="your_actual_api_key_here"
+```
+
 ## Potential Improvements
 
 -   **API Key Management**: Implement more secure and flexible API key management for non-Colab environments (e.g., `.env` files).
