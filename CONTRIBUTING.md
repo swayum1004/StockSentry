@@ -8,8 +8,7 @@ This file tracks the contributions and points of all contributors based on their
 
 | S.No | Name              | GitHub Username     | Contribution / Issue(s)                                          | Points | Status |
 |------|-------------------|---------------------|------------------------------------------------------------------|--------|--------|
-| 1    | Chaitenya Chand   | @https://github.com/chaitenyachand | [#1](https://github.com/chaitenyachand/StockSentry/issues/1)        | 10     | ✅     |
-StockSentry/issues/2)        | 3      | ✅     |
+| 1    | Chaitenya Chand   | @https://github.com/chaitenyachand | [#1](https://github.com/chaitenyachand/StockSentry/issues/1)        | __   | ✅     |
 
 *This table will be updated weekly based on merged PRs.*
 
