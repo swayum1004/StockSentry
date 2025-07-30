@@ -390,22 +390,15 @@ Predicts tomorrow's closing price based on:
 
 ---
 
-## 🗺️ Roadmap: From Good to Great
+## Potential Improvements
 
-*   [ ] **Phase 1: Enhanced Analytics**
-    *   [ ] Technical indicators integration (RSI, MACD, Moving Averages)
-    *   [ ] Multiple ML model comparison (LSTM, XGBoost, etc.)
-    *   [ ] Advanced sentiment analysis with VADER/BERT
-
-*   [ ] **Phase 2: Real-time Features**
-    *   [ ] Live data streaming
-    *   [ ] Real-time prediction API
-    *   [ ] Web dashboard for visualization
-
-*   [ ] **Phase 3: Advanced Intelligence**
-    *   [ ] Multi-stock portfolio analysis
-    *   [ ] Risk assessment metrics
-    *   [ ] Integration with trading platforms
+1. **API Key Management:**  Implement more secure and flexible API key management for non-Colab environments (e.g., .env files).(Done)
+2. **Advanced Sentiment Analysis:** Explore more sophisticated NLP models (e.g., VADER, BERT) for improved sentiment accuracy.
+3. **Additional Features:** Incorporate technical indicators (e.g., Moving Averages, RSI), trading volume, or broader market indices.
+4. **Model Optimization:** Experiment with different machine learning models (e.g., LSTM for time series) and perform hyperparameter tuning.
+5. **Error Handling:** Add robust error handling for API calls and data processing.
+6. **Real-time Integration:** Develop a system for real-time stock data and news fetching for live predictions.
+7. **Deployment:** Refactor the notebook into a production-ready application with a user interface or API endpoint.
 
 ---
 
