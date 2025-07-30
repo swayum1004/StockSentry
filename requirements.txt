@@ -1,7 +1,20 @@
-pandas==2.2.2
-yfinance==0.2.36
-textblob==0.17.1
-scikit-learn==1.4.2
-requests==2.31.0
-python-dotenv==1.0.1
-pytest
+# Core data science libraries
+pandas>=1.5.0
+numpy>=1.24.0
+
+# Machine learning libraries
+scikit-learn>=1.3.0
+xgboost>=1.7.0
+
+# Financial data
+yfinance>=0.2.0
+
+# Web requests and API handling
+requests>=2.28.0
+
+# Natural language processing
+textblob>=0.17.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
