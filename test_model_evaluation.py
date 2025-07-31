@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import pandas as pd
 from sklearn.linear_model import LinearRegression
 from Senetry_ML import StockSentryML  # assuming this is your actual model file
 
@@ -41,6 +42,15 @@ class TestModelEvaluationWithDummyData(unittest.TestCase):
 
         # Step 7: Check predictions match expected [10, 12]
         np.testing.assert_array_almost_equal(predictions, self.y_test, decimal=1)
+
+        # Step 8: Save test data and predictions to CSV
+        df = pd.DataFrame({
+            'X_test': self.X_test.flatten(),
+            'y_test': self.y_test,
+            'y_pred': predictions
+        })
+        df.to_csv('test_predictions_output.csv', index=False)
+
 
 if __name__ == '__main__':
     unittest.main()
