@@ -12,6 +12,9 @@ import os
 from dotenv import load_dotenv
 import warnings
 warnings.filterwarnings('ignore')
+load_dotenv()
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+
 
 
 class StockSentryML:
@@ -29,7 +32,7 @@ class StockSentryML:
             # Return random sentiment between -0.1 and 0.1 for demo purposes
             return np.random.uniform(-0.1, 0.1)
 
-        url = ('https://newsapi.org/v2/everything?'
+        url = ('{NEWS_API_URL}?'
                f'q={company}&from={date}&to={date}&sortBy=relevance&language=en&apiKey={self.news_api_key}')
         try:
             response = requests.get(url, timeout=10).json()
