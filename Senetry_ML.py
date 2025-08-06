@@ -111,7 +111,8 @@ class StockSentryML:
             except Exception as e:
                 continue
 
-        return np.array(features), np.array(targets)
+        # Ensure targets is always 1D
+        return np.array(features), np.array(targets, dtype=float).reshape(-1)
 
     def initialize_models(self):
         """Initialize multiple ML models"""
@@ -399,5 +400,80 @@ try:
 except Exception as e:
     print(f"\n❌ Error: {e}")
 
+
+# --- Visualization Section ---
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+
+def plot_closing_price(data, ticker):
+    plt.figure(figsize=(12,6))
+    sns.lineplot(x=data['Date'], y=data['Close'], marker='o', label='Close Price')
+    plt.title(f'{ticker} Closing Price Trend')
+    plt.xlabel('Date')
+    plt.ylabel('Close Price (USD)')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('closing_price.png')
+    plt.show()
+
+def plot_sentiment_over_time(data, ticker):
+    if 'Sentiment' not in data.columns:
+        sentiments = []
+        for i in range(len(data)):
+            date_str = data.loc[i, 'Date']
+            if hasattr(date_str, 'strftime'):
+                date_str = date_str.strftime('%Y-%m-%d')
+            else:
+                date_str = str(date_str)[:10]
+            sentiments.append(stock_sentry.get_news_sentiment(ticker, date_str))
+        data['Sentiment'] = sentiments
+    fig, ax1 = plt.subplots(figsize=(12,6))
+    color = 'tab:blue'
+    ax1.set_xlabel('Date')
+    ax1.set_ylabel('Close Price (USD)', color=color)
+    ax1.plot(data['Date'], data['Close'], color=color, label='Close Price')
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax2 = ax1.twinx()
+    color = 'tab:red'
+    ax2.set_ylabel('Sentiment', color=color)
+    ax2.plot(data['Date'], data['Sentiment'], color=color, linestyle='--', label='Sentiment')
+    ax2.tick_params(axis='y', labelcolor=color)
+    plt.title(f'{ticker} - Close Price & News Sentiment Over Time')
+    fig.tight_layout()
+    plt.savefig('sentiment_over_time.png')
+    plt.show()
+
+def plot_actual_vs_predicted(y_test, y_pred):
+    import pandas as pd
+    import numpy as np
+    # Force to 1D numpy arrays, no matter what
+    y_test_flat = np.array(y_test).reshape(-1)
+    y_pred_flat = np.array(y_pred).reshape(-1)
+    min_len = min(len(y_test_flat), len(y_pred_flat))
+    y_test_flat = y_test_flat[:min_len]
+    y_pred_flat = y_pred_flat[:min_len]
+    results_df = pd.DataFrame({'Actual': y_test_flat, 'Predicted': y_pred_flat})
+    fig = px.line(results_df, y=['Actual', 'Predicted'], title='Actual vs. Predicted Closing Price')
+    fig.update_layout(xaxis_title='Sample', yaxis_title='Closing Price (USD)')
+    fig.write_html('actual_vs_predicted.html')
+    fig.show()
 print("\n" + "=" * 30)
 print("✅ Analysis complete!")
+
+# --- Call visualizations after analysis ---
+try:
+    plot_closing_price(stock_sentry.data, TICKER)
+    plot_sentiment_over_time(stock_sentry.data, TICKER)
+    # For actual vs predicted, need y_test and predictions
+    # Re-run prediction for test set
+    X, y = stock_sentry.prepare_features(TICKER)
+    y = np.asarray(y).flatten()
+    _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    y_test = np.asarray(y_test).flatten()
+    y_pred = stock_sentry.best_model.predict(X_test)
+    y_pred = np.asarray(y_pred).flatten()
+    plot_actual_vs_predicted(y_test, y_pred)
+except Exception as e:
+    print(f"Visualization error: {e}")
