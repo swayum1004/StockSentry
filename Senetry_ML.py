@@ -13,6 +13,8 @@ from dotenv import load_dotenv
 import warnings
 warnings.filterwarnings('ignore')
 from config import NEWS_API_URL
+import logging
+from datetime import datetime
 
 
 class StockSentryML:
@@ -23,6 +25,8 @@ class StockSentryML:
         self.models = {}
         self.best_model = None
         self.data = None
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+        logging.info("StockSentryML initialized")
 
     def get_news_sentiment(self, company, date):
         """Get news sentiment with proper error handling"""
@@ -56,9 +60,10 @@ class StockSentryML:
                 raise ValueError(f"No data found for ticker {ticker}")
 
             self.data.reset_index(inplace=True)
+            logging.info(f"Data fetched for {ticker}: {len(self.data)} rows")
             return self.data
         except Exception as e:
-            print(f"❌ Error fetching data: {e}")
+            logging.error(f"Error fetching data: {e}")
             raise
 
     def prepare_features(self, ticker):
@@ -262,6 +267,7 @@ class StockSentryML:
 
             # 2. Initialize and train models
             self.initialize_models()
+            logging.info(f"Models initialized: {list(self.models.keys())}")
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 
