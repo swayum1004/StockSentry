@@ -15,6 +15,8 @@ warnings.filterwarnings('ignore')
 from config import NEWS_API_URL
 import logging
 from datetime import datetime
+import time
+from requests.exceptions import RequestException, Timeout
 
 
 class StockSentryML:
@@ -28,43 +30,68 @@ class StockSentryML:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
         logging.info("StockSentryML initialized")
 
-    def get_news_sentiment(self, company, date):
-        """Get news sentiment with proper error handling"""
+    def get_news_sentiment(self, company, date, retries=3, delay=2):
+        """Get news sentiment with proper error handling & retries"""
         if not self.news_api_key or self.news_api_key == "your_api_key_here":
             # Return random sentiment between -0.1 and 0.1 for demo purposes
             return np.random.uniform(-0.1, 0.1)
 
         url = (f'{NEWS_API_URL}?q={company}&from={date}&to={date}&sortBy=relevance&language=en&apiKey={self.news_api_key}')
-        try:
-            response = requests.get(url, timeout=10).json()
-            sentiments = []
-            for article in response.get('articles', []):
-                if article.get('title'):
-                    headline = article['title']
-                    sentiment = TextBlob(headline).sentiment.polarity  # -1 to +1
-                    sentiments.append(sentiment)
+        
+        attempt = 0
+        while attempt < retries:
+            try:
+                response = requests.get(url, timeout=10)
+                if response.status_code == 401:
+                    logging.error("[NewsAPI] Invalid or missing API key.")
+                    return 0.0
+                if response.status_code == 429:
+                    logging.warning("[NewsAPI] Rate limit reached. Try again later.")
+                    return 0.0
+                response.raise_for_status()
+                
+                data = response.json()
+                sentiments = []
+                for article in data.get('articles', []):
+                    if article.get('title'):
+                        headline = article['title']
+                        sentiment = TextBlob(headline).sentiment.polarity  # -1 to +1
+                        sentiments.append(sentiment)
 
-            if sentiments:
-                avg_sentiment = sum(sentiments) / len(sentiments)
-                return float(avg_sentiment)  # Ensure it's a single float
-            else:
-                return 0.0
-        except Exception as e:
-            return 0.0
+                if sentiments:
+                    return float(sum(sentiments) / len(sentiments))
+                else:
+                    return 0.0
+            except Exception as e:
+                attempt += 1
+                logging.warning(f"[NewsAPI] Attempt {attempt}/{retries} failed: {e}")
+                if attempt < retries:
+                    time.sleep(delay)
+                else:
+                    logging.error("[NewsAPI] All retries failed. Returning 0.0 sentiment.")
+                    return 0.0
 
-    def fetch_stock_data(self, ticker, start_date="2023-01-01", end_date="2023-06-30"):
-        """Fetch stock data with proper error handling"""
-        try:
-            self.data = yf.download(ticker, start=start_date, end=end_date)
-            if self.data.empty:
-                raise ValueError(f"No data found for ticker {ticker}")
+    def fetch_stock_data(self, ticker, start_date="2023-01-01", end_date="2023-06-30", retries=3, delay=2):
+        """Fetch stock data with robust error handling & retries"""
+        attempt = 0
+        while attempt < retries:
+            try:
+                self.data = yf.download(ticker, start=start_date, end=end_date, progress=False)
+                if self.data.empty:
+                    raise ValueError(f"No data found for ticker {ticker}")
 
-            self.data.reset_index(inplace=True)
-            logging.info(f"Data fetched for {ticker}: {len(self.data)} rows")
-            return self.data
-        except Exception as e:
-            logging.error(f"Error fetching data: {e}")
-            raise
+                self.data.reset_index(inplace=True)
+                logging.info(f"Data fetched for {ticker}: {len(self.data)} rows")
+                return self.data
+            except Exception as e:
+                attempt += 1
+                logging.warning(f"[yfinance] Attempt {attempt}/{retries} failed: {e}")
+                if attempt < retries:
+                    time.sleep(delay)
+                else:
+                    logging.error("[yfinance] All retries failed. Returning empty DataFrame.")
+                    self.data = pd.DataFrame()
+                    return self.data
 
     def prepare_features(self, ticker):
         """Prepare features with fixed indexing"""
@@ -96,7 +123,6 @@ class StockSentryML:
                 current_close = self.data.loc[i, 'Close']
                 next_close = self.data.loc[i + 1, 'Close']
 
-                # Convert to float if needed
                 if hasattr(current_close, 'iloc'):
                     current_close = float(current_close.iloc[0])
                 else:
@@ -107,7 +133,6 @@ class StockSentryML:
                 else:
                     next_close = float(next_close)
 
-
                 # Create feature vector
                 feature_vector = [current_close, sentiment]
                 features.append(feature_vector)
@@ -116,8 +141,8 @@ class StockSentryML:
             except Exception as e:
                 continue
 
-        # Ensure targets is always 1D
         return np.array(features), np.array(targets, dtype=float).reshape(-1)
+
 
     def initialize_models(self):
         """Initialize multiple ML models"""
